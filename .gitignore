@@ -1,0 +1,33 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Android Build & Gradle
+.gradle/
+build/
+*/build/
+app/build/
+*.iml
+.idea/
+local.properties
+.cxx/
+
+# Operating System & Editors
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+.vscode/
+
+# Scratch & temporary helper scripts
+scratch/
+build_and_sign_zenith.py
