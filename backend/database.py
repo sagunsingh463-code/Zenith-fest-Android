@@ -1,9 +1,21 @@
 import sqlite3
 from pathlib import Path
 
-# Locate fest.db at project root so paths resolve predictably
+import os
+import shutil
+
+# Locate fest.db at project root so paths resolve predictably (supports Vercel /tmp)
 BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "fest.db"
+if os.environ.get("VERCEL"):
+    tmp_db = Path("/tmp/fest.db")
+    if not tmp_db.exists() and (BASE_DIR / "fest.db").exists():
+        try:
+            shutil.copy2(BASE_DIR / "fest.db", tmp_db)
+        except Exception:
+            pass
+    DB_PATH = tmp_db
+else:
+    DB_PATH = BASE_DIR / "fest.db"
 
 
 def get_db_connection() -> sqlite3.Connection:

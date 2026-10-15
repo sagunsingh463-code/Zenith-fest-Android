@@ -1,0 +1,32 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/mobile",
+      "destination": "/frontend/mobile.html"
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/frontend/admin.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/frontend/admin.html"
+    },
+    {
+      "source": "/Zenith26.apk",
+      "destination": "/frontend/Zenith26.apk"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/frontend/js/$1"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "/frontend/$1"
+    }
+  ]
+}
