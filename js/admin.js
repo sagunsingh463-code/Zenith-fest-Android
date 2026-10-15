@@ -63,12 +63,22 @@ function getCategoryBadge(category) {
 }
 
 
+// Dual-route API fetch helper: tries /api/... then falls back to /...
+async function apiFetch(endpoint, options) {
+  const cleanEp = endpoint.replace(/^\/+/, '').replace(/^api\//, '');
+  try {
+    const res1 = await fetch(`/api/${cleanEp}`, options);
+    if (res1.ok) return res1;
+  } catch (_) {}
+  return await fetch(`/${cleanEp}`, options);
+}
+
 // ==============================================================================
 // 1. Fetch Live Stats (GET /api/stats)
 // ==============================================================================
 async function loadStats() {
   try {
-    const res = await fetch("/api/stats");
+    const res = await apiFetch("stats");
     if (!res.ok) throw new Error(`Stats fetch failed (${res.status})`);
     const data = await res.json();
 
@@ -122,7 +132,7 @@ async function loadEventsTable() {
   `;
 
   try {
-    const res = await fetch("/api/events");
+    const res = await apiFetch("events");
     if (!res.ok) throw new Error(`Events fetch failed (${res.status})`);
     const events = await res.json();
     cachedEvents = events;
@@ -267,13 +277,13 @@ async function loadRegistrationsTable() {
     </tr>
   `;
 
-  let url = "/api/registrations";
+  let ep = "registrations";
   if (currentEventFilter) {
-    url += `?event_id=${encodeURIComponent(currentEventFilter)}`;
+    ep += `?event_id=${encodeURIComponent(currentEventFilter)}`;
   }
 
   try {
-    const res = await fetch(url);
+    const res = await apiFetch(ep);
     if (!res.ok) throw new Error(`Failed to load registrations (${res.status})`);
     const regs = await res.json();
     cachedRegistrations = regs;
@@ -371,7 +381,7 @@ async function handleCancelRegistration(id, studentName, eventTitle) {
   if (!confirmed) return;
 
   try {
-    const res = await fetch(`/api/registrations/${id}`, {
+    const res = await apiFetch(`registrations/${id}`, {
       method: "DELETE",
     });
 
@@ -418,7 +428,7 @@ async function handleCreateEvent(e) {
   }
 
   try {
-    const res = await fetch("/api/events", {
+    const res = await apiFetch("events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

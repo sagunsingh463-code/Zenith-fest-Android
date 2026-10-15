@@ -77,6 +77,16 @@ function getCategoryBadgeClasses(category) {
 
 // ==============================================================================
 // API Fetching: GET /api/events (with category & search query params)
+// Dual-route API fetch helper: tries /api/... then falls back to /...
+async function apiFetch(endpoint, options) {
+  const cleanEp = endpoint.replace(/^\/+/, '').replace(/^api\//, '');
+  try {
+    const res1 = await fetch(`/api/${cleanEp}`, options);
+    if (res1.ok) return res1;
+  } catch (_) {}
+  return await fetch(`/${cleanEp}`, options);
+}
+
 // ==============================================================================
 async function fetchEvents() {
   // Show loading state
@@ -94,10 +104,10 @@ async function fetchEvents() {
     params.append("search", currentSearch.trim());
   }
 
-  const url = `/api/events${params.toString() ? "?" + params.toString() : ""}`;
+  const qStr = params.toString() ? "?" + params.toString() : "";
 
   try {
-    const response = await fetch(url);
+    const response = await apiFetch(`events${qStr}`);
     if (!response.ok) {
       throw new Error(`Server returned status HTTP ${response.status}`);
     }
@@ -230,7 +240,7 @@ async function openEventDetail(eventId) {
   registrationForm.reset();
 
   try {
-    const res = await fetch(`/api/events/${eventId}`);
+    const res = await apiFetch(`events/${eventId}`);
     if (!res.ok) {
       throw new Error(`Failed to load event details (${res.status})`);
     }
@@ -361,7 +371,7 @@ async function handleRegistrationSubmit(e) {
   submitBtnText.textContent = "Registering...";
 
   try {
-    const response = await fetch(`/api/events/${eventId}/register`, {
+    const response = await apiFetch(`events/${eventId}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

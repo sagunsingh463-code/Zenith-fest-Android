@@ -422,6 +422,16 @@
     let currentScreen = 'portal'; // 'portal' | 'admin'
     let activeSheetEvent = null;
 
+    // Dual-route API fetch helper: tries /api/... then falls back to /...
+    async function apiFetch(endpoint, options) {
+      const cleanEp = endpoint.replace(/^\/+/, '').replace(/^api\//, '');
+      try {
+        const res1 = await fetch(`${apiBase}/api/${cleanEp}`, options);
+        if (res1.ok) return res1;
+      } catch (_) {}
+      return await fetch(`${apiBase}/${cleanEp}`, options);
+    }
+
     // Clock simulation
     function updateClock() {
       const now = new Date();
@@ -504,7 +514,8 @@
       if (currentSearch.trim()) params.append('search', currentSearch.trim());
 
       try {
-        const res = await fetch(`${apiBase}/api/events${params.toString() ? '?' + params.toString() : ''}`);
+        const qStr = params.toString() ? '?' + params.toString() : '';
+        const res = await apiFetch(`events${qStr}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const events = await res.json();
         cachedEvents = events;
@@ -623,7 +634,7 @@
       document.getElementById('mobile-reg-form').reset();
 
       try {
-        const res = await fetch(`${apiBase}/api/events/${eventId}`);
+        const res = await apiFetch(`events/${eventId}`);
         if (!res.ok) throw new Error('Not found');
         const ev = await res.json();
         activeSheetEvent = ev;
@@ -686,7 +697,7 @@
       submitBtn.textContent = 'Submitting...';
 
       try {
-        const res = await fetch(`${apiBase}/api/events/${eventId}/register`, {
+        const res = await apiFetch(`events/${eventId}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -732,9 +743,9 @@
     async function loadAdminStats() {
       try {
         const [statsRes, eventsRes, regsRes] = await Promise.all([
-          fetch(`${apiBase}/api/stats`),
-          fetch(`${apiBase}/api/events`),
-          fetch(`${apiBase}/api/registrations`)
+          apiFetch('stats'),
+          apiFetch('events'),
+          apiFetch('registrations')
         ]);
 
         const stats = await statsRes.json();
@@ -847,9 +858,9 @@
     }
 
     async function filterAdminRegistrations(eventId) {
-      const url = eventId ? `${apiBase}/api/registrations?event_id=${eventId}` : `${apiBase}/api/registrations`;
+      const ep = eventId ? `registrations?event_id=${eventId}` : 'registrations';
       try {
-        const res = await fetch(url);
+        const res = await apiFetch(ep);
         const regs = await res.json();
         renderAdminRegistrations(regs);
       } catch (err) {
@@ -888,7 +899,7 @@
     async function cancelRegistration(id, name) {
       if (!confirm(`Cancel registration #${id} for ${name}?`)) return;
       try {
-        const res = await fetch(`${apiBase}/api/registrations/${id}`, { method: 'DELETE' });
+        const res = await apiFetch(`registrations/${id}`, { method: 'DELETE' });
         if (res.ok) {
           loadAdminStats();
           loadEvents();
