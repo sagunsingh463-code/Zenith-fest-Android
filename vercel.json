@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -6,27 +7,11 @@
     },
     {
       "source": "/mobile",
-      "destination": "/frontend/mobile.html"
-    },
-    {
-      "source": "/admin.html",
-      "destination": "/frontend/admin.html"
+      "destination": "/mobile.html"
     },
     {
       "source": "/admin",
-      "destination": "/frontend/admin.html"
-    },
-    {
-      "source": "/Zenith26.apk",
-      "destination": "/frontend/Zenith26.apk"
-    },
-    {
-      "source": "/js/(.*)",
-      "destination": "/frontend/js/$1"
-    },
-    {
-      "source": "/static/(.*)",
-      "destination": "/frontend/$1"
+      "destination": "/admin.html"
     }
   ]
 }

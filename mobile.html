@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Zenith '26 — Native Android Mobile App</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              950: '#020617',
+              900: '#0f172a',
+              850: '#141e33',
+              800: '#1e293b',
+              700: '#334155'
+            },
+            fest: {
+              purple: '#7c3aed',
+              neon: '#ec4899',
+              amber: '#f59e0b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom mobile device styling */
+    body {
+      background-color: #030712;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      touch-action: manipulation;
+    }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .phone-frame {
+      width: 100%;
+      max-width: 412px;
+      height: 870px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(124, 58, 237, 0.2);
+    }
+    @media (max-width: 640px) {
+      .phone-frame {
+        max-width: 100%;
+        height: 100vh;
+        border-radius: 0 !important;
+        border: none !important;
+      }
+      .phone-outer {
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col items-center justify-center p-0 sm:p-4 selection:bg-purple-600">
+
+  <!-- Outer Container for Desktop Preview -->
+  <div class="phone-outer w-full flex flex-col items-center justify-center">
+
+    <!-- Top Preview Controls Bar (only visible on desktop) -->
+    <div class="hidden sm:flex items-center justify-between w-full max-w-[412px] mb-3 px-2 text-xs text-slate-400">
+      <div class="flex items-center space-x-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="font-bold text-slate-300">Android Mobile Preview (Kotlin/Compose)</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="bg-purple-900/60 border border-purple-500/40 text-purple-300 px-2 py-0.5 rounded font-mono text-[10px]">Pixel 8 • 412x870</span>
+      </div>
+    </div>
+
+    <!-- Realistic Android Smartphone Mockup -->
+    <div class="phone-frame bg-slate-950 border-[6px] border-slate-800 rounded-[44px] flex flex-col overflow-hidden relative">
+
+      <!-- Android Hardware Camera Punch-Hole & Status Bar -->
+      <div class="w-full bg-slate-950 px-6 pt-3 pb-1 flex items-center justify-between text-[11px] text-slate-400 font-semibold select-none z-30 shrink-0">
+        <span id="device-clock">09:41</span>
+        <div class="w-4 h-4 rounded-full bg-black border border-slate-800 shadow-inner"></div>
+        <div class="flex items-center space-x-1.5">
+          <span>5G</span>
+          <span>📶</span>
+          <span>🔋 98%</span>
+        </div>
+      </div>
+
+      <!-- Android App Top Bar -->
+      <header class="bg-slate-900/95 border-b border-slate-800 px-4 py-2.5 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center space-x-2.5 cursor-pointer" onclick="switchTab('portal')">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 flex items-center justify-center text-sm shadow-md shadow-purple-600/30">
+            ⚡
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-sm font-black tracking-tight text-white">ZENITH '26</span>
+              <span id="screen-badge" class="hidden text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">ADMIN</span>
+            </div>
+            <span class="block text-[9px] uppercase tracking-wider text-purple-400 font-semibold -mt-0.5">College Fest App</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <a href="/Zenith26.apk" download="Zenith26.apk" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm flex items-center space-x-1 transition active:scale-95" title="Download APK">
+            <span>📥</span>
+            <span>APK</span>
+          </a>
+          <button id="toggle-screen-btn" onclick="toggleScreen()" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95">
+            📊 Admin
+          </button>
+          <button onclick="openConfigModal()" class="p-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="API Settings">
+            ⚙️
+          </button>
+        </div>
+      </header>
+
+      <!-- App Content Scrollable Viewport -->
+      <main id="app-viewport" class="flex-1 overflow-y-auto scrollbar-none bg-slate-950 pb-6 relative">
+
+        <!-- ================= STUDENT PORTAL SCREEN ================= -->
+        <section id="student-portal-screen" class="space-y-4">
+          <!-- Hero Section -->
+          <div class="bg-gradient-to-b from-purple-950/40 via-slate-950 to-slate-950 pt-6 pb-4 px-4 border-b border-slate-800/80 text-center relative overflow-hidden">
+            <div class="inline-flex items-center space-x-1.5 bg-purple-900/40 border border-purple-500/30 text-purple-300 text-[11px] font-semibold px-3 py-1 rounded-full mb-2.5 shadow-inner">
+              <span>📅</span>
+              <span>Nov 14 – 15, 2026</span>
+              <span>•</span>
+              <span>Campus Grounds</span>
+            </div>
+
+            <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-400 to-amber-300 leading-tight">
+              Ignite the Stage.<br>Build the Future.
+            </h1>
+
+            <p class="mt-2 text-xs text-slate-400 leading-relaxed px-2">
+              Explore 14 flagship events across technical, cultural, sports, and gaming tracks.
+            </p>
+
+            <div class="mt-3.5 flex items-center justify-center gap-2 text-[10px] text-slate-300 font-medium">
+              <span class="px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">🔥 14 Events</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">⚡ 5 Tracks</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">🎓 Open to All</span>
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="px-4 space-y-3">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Search events by title..."
+                class="w-full pl-8 pr-8 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button id="clear-search-btn" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 text-xs" onclick="clearSearch()">✕</button>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span id="events-count-label">Loading events...</span>
+            </div>
+
+            <!-- Category Filter Pills Bar -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="category-pills">
+              <button onclick="setCategory('All')" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap bg-purple-600 text-white border border-purple-500">All Events</button>
+              <button onclick="setCategory('Technical')" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-slate-900 text-slate-300 border border-slate-800">💻 Technical</button>
+              <button onclick="setCategory('Cultural')" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-slate-900 text-slate-300 border border-slate-800">🎭 Cultural</button>
+              <button onclick="setCategory('Sports')" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-slate-900 text-slate-300 border border-slate-800">⚽ Sports</button>
+              <button onclick="setCategory('Gaming')" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-slate-900 text-slate-300 border border-slate-800">🎮 Gaming</button>
+              <button onclick="setCategory('Workshop')" class="cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-slate-900 text-slate-300 border border-slate-800">🛠️ Workshop</button>
+            </div>
+          </div>
+
+          <!-- Loading View -->
+          <div id="loading-spinner" class="py-12 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-3 border-purple-500 border-t-transparent"></div>
+            <p class="mt-3 text-xs text-slate-400">Connecting to FastAPI backend...</p>
+          </div>
+
+          <!-- Error View -->
+          <div id="error-view" class="hidden mx-4 p-4 rounded-2xl bg-rose-950/40 border border-rose-800/60 text-center">
+            <div class="text-2xl mb-1">⚠️</div>
+            <h3 class="text-xs font-bold text-rose-300">Server Connection Error</h3>
+            <p id="error-desc" class="text-[11px] text-rose-200 mt-1">Unable to connect to backend.</p>
+            <button onclick="loadEvents()" class="mt-3 px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded-lg">Try Again</button>
+          </div>
+
+          <!-- Empty View -->
+          <div id="empty-view" class="hidden py-12 text-center px-4">
+            <div class="text-3xl mb-1">🔎</div>
+            <h3 class="text-xs font-bold text-slate-200">No events found</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Try a different keyword or reset filters.</p>
+            <button onclick="resetFilters()" class="mt-3 px-3 py-1.5 bg-slate-800 border border-slate-700 text-purple-300 text-xs font-bold rounded-lg">Reset All</button>
+          </div>
+
+          <!-- Events List Container -->
+          <div id="events-list" class="px-4 space-y-3 pb-4">
+            <!-- Cards populated dynamically -->
+          </div>
+        </section>
+
+        <!-- ================= ADMIN DASHBOARD SCREEN ================= -->
+        <section id="admin-dashboard-screen" class="hidden px-4 space-y-4 pt-3">
+          <!-- Refresh and Header -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Festival Overview</h2>
+              <span id="admin-last-sync" class="text-[10px] text-slate-500">Live DB Metrics</span>
+            </div>
+            <button onclick="loadAdminStats()" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-900 border border-slate-700 text-slate-300 flex items-center space-x-1 active:scale-95">
+              <span>🔄</span>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <!-- 4 Stat Cards Grid -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+              <div class="flex items-center justify-between text-slate-400 text-xs">
+                <span>Total Events</span>
+                <span>📅</span>
+              </div>
+              <div id="stat-events" class="text-xl font-black text-white mt-1">--</div>
+              <p class="text-[10px] text-slate-500">Fest catalog</p>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+              <div class="flex items-center justify-between text-slate-400 text-xs">
+                <span>Registrations</span>
+                <span>✍️</span>
+              </div>
+              <div id="stat-regs" class="text-xl font-black text-white mt-1">--</div>
+              <p class="text-[10px] text-slate-500">Enrolled students</p>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 col-span-2">
+              <div class="flex items-center justify-between text-slate-400 text-xs">
+                <span>Capacity Utilization</span>
+                <span>📈</span>
+              </div>
+              <div class="flex items-baseline space-x-2 mt-1">
+                <span id="stat-util-pct" class="text-2xl font-black text-emerald-400">--%</span>
+                <span id="stat-seats-total" class="text-[11px] text-slate-400">of -- seats</span>
+              </div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div id="stat-util-bar" class="bg-gradient-to-r from-emerald-500 to-purple-500 h-1.5 rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Breakdown -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">Events by Track</span>
+            <div id="admin-category-ribbon" class="flex flex-wrap gap-2">
+              <span class="text-xs text-slate-500">Loading...</span>
+            </div>
+          </div>
+
+          <!-- Admin Tabs -->
+          <div class="border-b border-slate-800 flex items-center space-x-4 text-xs font-bold pt-1">
+            <button id="admin-tab-util" onclick="switchAdminSubtab('util')" class="pb-2 border-b-2 border-purple-500 text-white">🎯 Utilization</button>
+            <button id="admin-tab-regs" onclick="switchAdminSubtab('regs')" class="pb-2 border-b-2 border-transparent text-slate-400">📋 Registrations</button>
+          </div>
+
+          <!-- Subtab 1: Event Utilization Table (Mobile Cards) -->
+          <div id="admin-subtab-util-content" class="space-y-2.5 pb-4">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- Subtab 2: Registrations List -->
+          <div id="admin-subtab-regs-content" class="hidden space-y-2.5 pb-4">
+            <!-- Filter Dropdown -->
+            <div class="flex items-center justify-between text-xs">
+              <select id="admin-regs-event-filter" onchange="filterAdminRegistrations(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 px-2.5 py-1.5 max-w-[200px]">
+                <option value="">All Events</option>
+              </select>
+              <span id="admin-regs-count-badge" class="text-slate-400 text-[11px]">0 records</span>
+            </div>
+            <div id="admin-regs-list" class="space-y-2">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Event Detail & Registration Modal (BottomSheet / Native Dialog) -->
+      <div id="event-detail-sheet" class="hidden absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex flex-col justify-end">
+        <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex flex-col overflow-hidden animate-slide-up shadow-2xl">
+          <!-- Sheet Header -->
+          <div class="p-4 bg-gradient-to-r from-purple-950/60 to-slate-900 border-b border-slate-800 flex items-start justify-between">
+            <div class="flex items-center space-x-2.5">
+              <div id="sheet-icon" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl">⚡</div>
+              <div>
+                <div class="flex items-center space-x-1.5">
+                  <span id="sheet-cat" class="text-[10px] font-bold px-2 py-0.5 rounded-full border">Category</span>
+                  <span id="sheet-fee" class="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-emerald-500/20 text-emerald-300 border-emerald-500/30">Free</span>
+                </div>
+                <h3 id="sheet-title" class="text-sm font-bold text-white mt-1">Event Title</h3>
+              </div>
+            </div>
+            <button onclick="closeDetailSheet()" class="p-1 rounded-lg bg-slate-800 text-slate-400 text-xs">✕</button>
+          </div>
+
+          <!-- Sheet Body -->
+          <div class="p-4 overflow-y-auto space-y-4 text-xs">
+            <!-- Metadata Grid -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 grid grid-cols-2 gap-2 text-[11px]">
+              <div>
+                <span class="text-slate-500 block">Date & Time</span>
+                <span id="sheet-datetime" class="font-semibold text-slate-200"></span>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Venue</span>
+                <span id="sheet-venue" class="font-semibold text-slate-200"></span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-slate-500 block">Seat Availability</span>
+                <span id="sheet-seats" class="font-bold"></span>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">About</span>
+              <p id="sheet-desc" class="text-slate-300 leading-relaxed text-[11px]"></p>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <!-- Registration Form -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-white text-xs">✍️ Student Registration</span>
+                <span id="sheet-status-badge" class="text-[10px] font-bold text-purple-400">Instant Confirmation</span>
+              </div>
+
+              <!-- Alert Box -->
+              <div id="sheet-alert" class="hidden p-2.5 rounded-xl text-[11px] font-medium mb-3"></div>
+
+              <form id="mobile-reg-form" onsubmit="submitMobileRegistration(event)" class="space-y-2.5">
+                <input type="hidden" id="sheet-event-id" value="">
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-300 mb-0.5">Full Name *</label>
+                  <input type="text" id="reg-name" required placeholder="e.g. Alex Morgan" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-300 mb-0.5">Roll Number / Student ID *</label>
+                  <input type="text" id="reg-roll" required placeholder="e.g. 2026CS108" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-300 mb-0.5">Email Address *</label>
+                  <input type="email" id="reg-email" required placeholder="e.g. alex@college.edu" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-300 mb-0.5">Phone Number (Optional)</label>
+                  <input type="tel" id="reg-phone" placeholder="e.g. +91 9876543210" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                </div>
+
+                <div class="pt-2 flex items-center justify-end space-x-2">
+                  <button type="button" onclick="closeDetailSheet()" class="px-3 py-1.5 text-xs text-slate-400">Cancel</button>
+                  <button type="submit" id="reg-submit-btn" class="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs rounded-lg shadow-md active:scale-95 disabled:opacity-50">Confirm</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-App API Config Modal -->
+      <div id="config-modal" class="hidden absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-white">⚙️ Backend API Endpoint</h4>
+            <button onclick="closeConfigModal()" class="text-slate-400 text-xs">✕</button>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-normal">
+            Configure the port or URL where your FastAPI backend is running.
+          </p>
+          <input type="text" id="config-api-url" value="" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono" />
+          <div class="flex items-center justify-end space-x-2 pt-2">
+            <button onclick="closeConfigModal()" class="px-3 py-1 text-xs text-slate-400">Cancel</button>
+            <button onclick="saveApiUrl()" class="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded-lg">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Android Navigation Bar (Back, Home, Recents) -->
+      <div class="w-full bg-slate-950 border-t border-slate-800/80 py-2.5 flex items-center justify-around text-slate-500 text-sm select-none z-30 shrink-0">
+        <button onclick="onAndroidBack()" class="p-1 active:text-white" title="Back">◀</button>
+        <button onclick="switchTab('portal')" class="p-1 active:text-white" title="Home">●</button>
+        <button onclick="toggleScreen()" class="p-1 active:text-white" title="Recents">■</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript logic: Live connection to FastAPI -->
+  <script>
+    // State
+    let currentPort = window.location.port || '8081';
+    let apiBase = window.location.origin;
+    let currentCategory = 'All';
+    let currentSearch = '';
+    let searchDebounce = null;
+    let cachedEvents = [];
+    let currentScreen = 'portal'; // 'portal' | 'admin'
+    let activeSheetEvent = null;
+
+    // Clock simulation
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('device-clock').textContent = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Screen Switching
+    function toggleScreen() {
+      if (currentScreen === 'portal') {
+        switchTab('admin');
+      } else {
+        switchTab('portal');
+      }
+    }
+
+    function switchTab(tab) {
+      currentScreen = tab;
+      const portal = document.getElementById('student-portal-screen');
+      const admin = document.getElementById('admin-dashboard-screen');
+      const badge = document.getElementById('screen-badge');
+      const btn = document.getElementById('toggle-screen-btn');
+
+      if (tab === 'portal') {
+        portal.classList.remove('hidden');
+        admin.classList.add('hidden');
+        badge.classList.add('hidden');
+        btn.textContent = '📊 Admin';
+      } else {
+        portal.classList.add('hidden');
+        admin.classList.remove('hidden');
+        badge.classList.remove('hidden');
+        btn.textContent = '⚡ Portal';
+        loadAdminStats();
+      }
+    }
+
+    function onAndroidBack() {
+      const sheet = document.getElementById('event-detail-sheet');
+      if (!sheet.classList.contains('hidden')) {
+        closeDetailSheet();
+        return;
+      }
+      if (currentScreen === 'admin') {
+        switchTab('portal');
+      }
+    }
+
+    // Category styling
+    function getCategoryTheme(cat) {
+      switch ((cat || '').toLowerCase()) {
+        case 'technical': return { badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' };
+        case 'cultural': return { badge: 'bg-pink-500/20 text-pink-300 border-pink-500/30' };
+        case 'sports': return { badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
+        case 'gaming': return { badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30' };
+        case 'workshop': return { badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
+        default: return { badge: 'bg-slate-700 text-slate-300 border-slate-600' };
+      }
+    }
+
+    // Fetch Events (GET /api/events)
+    async function loadEvents() {
+      const spinner = document.getElementById('loading-spinner');
+      const errorView = document.getElementById('error-view');
+      const emptyView = document.getElementById('empty-view');
+      const eventsList = document.getElementById('events-list');
+      const countLabel = document.getElementById('events-count-label');
+
+      spinner.classList.remove('hidden');
+      errorView.classList.add('hidden');
+      emptyView.classList.add('hidden');
+      eventsList.innerHTML = '';
+      countLabel.textContent = 'Fetching live events...';
+
+      const params = new URLSearchParams();
+      if (currentCategory && currentCategory !== 'All') params.append('category', currentCategory);
+      if (currentSearch.trim()) params.append('search', currentSearch.trim());
+
+      try {
+        const res = await fetch(`${apiBase}/api/events${params.toString() ? '?' + params.toString() : ''}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const events = await res.json();
+        cachedEvents = events;
+        spinner.classList.add('hidden');
+
+        if (!events || events.length === 0) {
+          emptyView.classList.remove('hidden');
+          countLabel.textContent = '0 events found';
+          return;
+        }
+
+        countLabel.textContent = `Showing ${events.length} event${events.length === 1 ? '' : 's'}`;
+        renderEventCards(events);
+      } catch (e) {
+        spinner.classList.add('hidden');
+        errorView.classList.remove('hidden');
+        document.getElementById('error-desc').textContent = `Could not reach ${apiBase} (${e.message}). Ensure backend is active.`;
+        countLabel.textContent = 'Connection failed';
+      }
+    }
+
+    function renderEventCards(events) {
+      const container = document.getElementById('events-list');
+      container.innerHTML = '';
+
+      events.forEach(ev => {
+        const isFull = ev.available_seats === 0;
+        const theme = getCategoryTheme(ev.category);
+        const feeText = ev.fee > 0 ? `₹${ev.fee}` : 'Free';
+
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 shadow-md';
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl shrink-0">
+              ${ev.icon || '⚡'}
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${theme.badge}">${ev.category}</span>
+              ${isFull 
+                ? '<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">FULL</span>'
+                : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">${feeText}</span>`
+              }
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold text-white line-clamp-1">${escapeHtml(ev.title)}</h3>
+            <p class="text-[11px] text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">${escapeHtml(ev.description || 'No description.')}</p>
+          </div>
+
+          <div class="text-[11px] text-slate-300 space-y-1 pt-1 border-t border-slate-800/80">
+            <div>📅 ${ev.event_date} • ${ev.event_time}</div>
+            <div class="line-clamp-1">📍 ${escapeHtml(ev.venue)}</div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-[9px] uppercase tracking-wider font-bold text-slate-500 block">Available Seats</span>
+              ${isFull 
+                ? `<span class="text-xs font-bold text-rose-400">0 / ${ev.capacity} seats</span>`
+                : `<span class="text-xs font-bold text-white"><span class="text-purple-400">${ev.available_seats}</span> / ${ev.capacity} seats</span>`
+              }
+            </div>
+            <button onclick="openDetailSheet(${ev.id})" class="px-3 py-1.5 rounded-xl text-xs font-bold transition active:scale-95 ${
+              isFull ? 'bg-slate-800 text-slate-300' : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+            }">
+              ${isFull ? 'View Details →' : 'Register Now →'}
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Category & Search controls
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.textContent.includes(cat) || (cat === 'All' && btn.textContent.includes('All Events'))) {
+          btn.className = 'cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap bg-purple-600 text-white border border-purple-500';
+        } else {
+          btn.className = 'cat-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-slate-900 text-slate-300 border border-slate-800';
+        }
+      });
+      loadEvents();
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const val = e.target.value;
+      document.getElementById('clear-search-btn').classList.toggle('hidden', val.length === 0);
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        currentSearch = val;
+        loadEvents();
+      }, 300);
+    });
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      currentSearch = '';
+      loadEvents();
+    }
+
+    function resetFilters() {
+      clearSearch();
+      setCategory('All');
+    }
+
+    // Detail Sheet / Registration
+    async function openDetailSheet(eventId) {
+      const sheet = document.getElementById('event-detail-sheet');
+      const alertBox = document.getElementById('sheet-alert');
+      alertBox.classList.add('hidden');
+      document.getElementById('mobile-reg-form').reset();
+
+      try {
+        const res = await fetch(`${apiBase}/api/events/${eventId}`);
+        if (!res.ok) throw new Error('Not found');
+        const ev = await res.json();
+        activeSheetEvent = ev;
+
+        document.getElementById('sheet-event-id').value = ev.id;
+        document.getElementById('sheet-icon').textContent = ev.icon || '⚡';
+        document.getElementById('sheet-title').textContent = ev.title;
+        document.getElementById('sheet-desc').textContent = ev.description || 'No description.';
+        document.getElementById('sheet-datetime').textContent = `${ev.event_date} at ${ev.event_time}`;
+        document.getElementById('sheet-venue').textContent = ev.venue;
+
+        const isFull = ev.available_seats === 0;
+        const theme = getCategoryTheme(ev.category);
+        const catElem = document.getElementById('sheet-cat');
+        catElem.textContent = ev.category;
+        catElem.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${theme.badge}`;
+        document.getElementById('sheet-fee').textContent = ev.fee > 0 ? `Fee: ₹${ev.fee}` : 'Free Entry';
+
+        const seatsElem = document.getElementById('sheet-seats');
+        const submitBtn = document.getElementById('reg-submit-btn');
+        const badge = document.getElementById('sheet-status-badge');
+
+        if (isFull) {
+          seatsElem.innerHTML = `<span class="text-rose-400 font-bold">FULL (0 / ${ev.capacity} left)</span>`;
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Event Full';
+          badge.textContent = 'Registrations Closed';
+          badge.className = 'text-[10px] font-bold text-rose-400';
+        } else {
+          seatsElem.innerHTML = `<span class="text-emerald-400 font-bold">${ev.available_seats}</span> / ${ev.capacity} seats left`;
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirm';
+          badge.textContent = 'Instant Confirmation';
+          badge.className = 'text-[10px] font-bold text-purple-400';
+        }
+
+        sheet.classList.remove('hidden');
+      } catch (err) {
+        alert('Could not load event: ' + err.message);
+      }
+    }
+
+    function closeDetailSheet() {
+      document.getElementById('event-detail-sheet').classList.add('hidden');
+      activeSheetEvent = null;
+    }
+
+    async function submitMobileRegistration(e) {
+      e.preventDefault();
+      const eventId = document.getElementById('sheet-event-id').value;
+      const name = document.getElementById('reg-name').value.trim();
+      const roll = document.getElementById('reg-roll').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+
+      const alertBox = document.getElementById('sheet-alert');
+      const submitBtn = document.getElementById('reg-submit-btn');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const res = await fetch(`${apiBase}/api/events/${eventId}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            student_name: name,
+            roll_number: roll,
+            email: email,
+            phone: phone || null
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 201) {
+          alertBox.className = 'p-2.5 rounded-xl text-[11px] font-medium mb-3 bg-emerald-950/60 border border-emerald-700 text-emerald-200';
+          alertBox.innerHTML = `✅ <strong>Success!</strong> Confirmed for ${escapeHtml(activeSheetEvent.title)}! (ID: #${data.id})`;
+          alertBox.classList.remove('hidden');
+
+          // Decrement locally and refresh
+          if (activeSheetEvent.available_seats > 0) {
+            activeSheetEvent.available_seats -= 1;
+            document.getElementById('sheet-seats').innerHTML = `<span class="text-emerald-400 font-bold">${activeSheetEvent.available_seats}</span> / ${activeSheetEvent.capacity} seats left`;
+          }
+
+          loadEvents();
+          setTimeout(() => { closeDetailSheet(); }, 2000);
+        } else {
+          alertBox.className = 'p-2.5 rounded-xl text-[11px] font-medium mb-3 bg-rose-950/60 border border-rose-800 text-rose-200';
+          alertBox.innerHTML = `⚠️ <strong>Error:</strong> ${escapeHtml(data.detail || 'Registration failed')}`;
+          alertBox.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirm';
+        }
+      } catch (err) {
+        alertBox.className = 'p-2.5 rounded-xl text-[11px] font-medium mb-3 bg-rose-950/60 border border-rose-800 text-rose-200';
+        alertBox.innerHTML = `⚠️ <strong>Network Error:</strong> ${err.message}`;
+        alertBox.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirm';
+      }
+    }
+
+    // Admin Dashboard Logic
+    async function loadAdminStats() {
+      try {
+        const [statsRes, eventsRes, regsRes] = await Promise.all([
+          fetch(`${apiBase}/api/stats`),
+          fetch(`${apiBase}/api/events`),
+          fetch(`${apiBase}/api/registrations`)
+        ]);
+
+        const stats = await statsRes.json();
+        const events = await eventsRes.json();
+        const regs = await regsRes.json();
+
+        // 4 Stat Cards
+        document.getElementById('stat-events').textContent = stats.total_events;
+        document.getElementById('stat-regs').textContent = stats.total_registrations;
+        document.getElementById('stat-util-pct').textContent = `${stats.overall_utilization_pct.toFixed(1)}%`;
+        document.getElementById('stat-seats-total').textContent = `of ${stats.total_capacity} seats`;
+        document.getElementById('stat-util-bar').style.width = `${Math.min(stats.overall_utilization_pct, 100)}%`;
+        document.getElementById('admin-last-sync').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+
+        // Category breakdown
+        const catBox = document.getElementById('admin-category-ribbon');
+        catBox.innerHTML = '';
+        Object.entries(stats.events_by_category || {}).forEach(([cat, count]) => {
+          const theme = getCategoryTheme(cat);
+          const pill = document.createElement('span');
+          pill.className = `px-2 py-0.5 rounded-lg text-[10px] font-bold border ${theme.badge}`;
+          pill.textContent = `${cat}: ${count}`;
+          catBox.appendChild(pill);
+        });
+
+        // Render Utilization table
+        renderAdminUtilization(events);
+
+        // Populate registrations filter dropdown & table
+        populateAdminRegsFilter(events);
+        renderAdminRegistrations(regs);
+
+      } catch (err) {
+        console.error('Failed to load admin stats:', err);
+      }
+    }
+
+    function renderAdminUtilization(events) {
+      const container = document.getElementById('admin-subtab-util-content');
+      container.innerHTML = '';
+
+      const sorted = [...events].sort((a, b) => {
+        const uA = (a.capacity - a.available_seats) / (a.capacity || 1);
+        const uB = (b.capacity - b.available_seats) / (b.capacity || 1);
+        return uB - uA;
+      });
+
+      sorted.forEach(ev => {
+        const registered = ev.capacity - ev.available_seats;
+        const pct = ev.capacity > 0 ? (registered / ev.capacity) * 100 : 0;
+        const isHigh = pct >= 90;
+        const isFull = ev.available_seats === 0;
+
+        const row = document.createElement('div');
+        row.className = `p-3 rounded-xl border text-xs space-y-1.5 ${
+          isHigh ? 'bg-rose-950/25 border-rose-500/40' : 'bg-slate-900 border-slate-800'
+        }`;
+        row.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white line-clamp-1">${ev.icon || '⚡'} ${escapeHtml(ev.title)}</span>
+            ${isFull 
+              ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500">FULL</span>'
+              : isHigh 
+                ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500">⚠ ≥90%</span>'
+                : '<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500">OPEN</span>'
+            }
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>${ev.category} • ${ev.event_date}</span>
+            <span class="font-bold ${isHigh ? 'text-rose-400' : 'text-slate-200'}">${pct.toFixed(1)}% (${registered}/${ev.capacity})</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+            <div class="${isHigh ? 'bg-rose-500' : 'bg-purple-500'} h-1 rounded-full" style="width: ${Math.min(pct, 100)}%"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function switchAdminSubtab(sub) {
+      const utilBtn = document.getElementById('admin-tab-util');
+      const regsBtn = document.getElementById('admin-tab-regs');
+      const utilContent = document.getElementById('admin-subtab-util-content');
+      const regsContent = document.getElementById('admin-subtab-regs-content');
+
+      if (sub === 'util') {
+        utilBtn.className = 'pb-2 border-b-2 border-purple-500 text-white';
+        regsBtn.className = 'pb-2 border-b-2 border-transparent text-slate-400';
+        utilContent.classList.remove('hidden');
+        regsContent.classList.add('hidden');
+      } else {
+        regsBtn.className = 'pb-2 border-b-2 border-purple-500 text-white';
+        utilBtn.className = 'pb-2 border-b-2 border-transparent text-slate-400';
+        regsContent.classList.remove('hidden');
+        utilContent.classList.add('hidden');
+      }
+    }
+
+    function populateAdminRegsFilter(events) {
+      const select = document.getElementById('admin-regs-event-filter');
+      const current = select.value;
+      select.innerHTML = '<option value="">All Events</option>';
+      events.forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev.id;
+        opt.textContent = `#${ev.id} - ${ev.title}`;
+        if (String(ev.id) === current) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    async function filterAdminRegistrations(eventId) {
+      const url = eventId ? `${apiBase}/api/registrations?event_id=${eventId}` : `${apiBase}/api/registrations`;
+      try {
+        const res = await fetch(url);
+        const regs = await res.json();
+        renderAdminRegistrations(regs);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderAdminRegistrations(regs) {
+      const list = document.getElementById('admin-regs-list');
+      document.getElementById('admin-regs-count-badge').textContent = `${regs.length} records`;
+      list.innerHTML = '';
+
+      if (regs.length === 0) {
+        list.innerHTML = '<div class="py-6 text-center text-slate-500 text-xs">No registrations found.</div>';
+        return;
+      }
+
+      regs.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-1';
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white">#${r.id} ${escapeHtml(r.student_name)}</span>
+            <button onclick="cancelRegistration(${r.id}, '${escapeHtml(r.student_name)}')" class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">Cancel</button>
+          </div>
+          <div class="text-purple-300 font-semibold line-clamp-1">${escapeHtml(r.event_title)}</div>
+          <div class="flex items-center justify-between text-slate-400 text-[10px]">
+            <span>Roll: ${escapeHtml(r.roll_number)}</span>
+            <span>${escapeHtml(r.email)}</span>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    async function cancelRegistration(id, name) {
+      if (!confirm(`Cancel registration #${id} for ${name}?`)) return;
+      try {
+        const res = await fetch(`${apiBase}/api/registrations/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadAdminStats();
+          loadEvents();
+        } else {
+          alert('Cancel failed');
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    // Config Dialog
+    function openConfigModal() {
+      document.getElementById('config-api-url').value = apiBase;
+      document.getElementById('config-modal').classList.remove('hidden');
+    }
+    function closeConfigModal() {
+      document.getElementById('config-modal').classList.add('hidden');
+    }
+    function saveApiUrl() {
+      let val = document.getElementById('config-api-url').value.trim();
+      if (val) {
+        if (!val.startsWith('http://') && !val.startsWith('https://')) val = 'http://' + val;
+        apiBase = val.replace(/\/+$/, '');
+        closeConfigModal();
+        loadEvents();
+        loadAdminStats();
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEvents();
+    });
+  </script>
+</body>
+</html>

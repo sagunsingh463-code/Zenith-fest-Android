@@ -73,6 +73,11 @@ def get_event_available_seats(cursor: sqlite3.Cursor, event_id: int, capacity: i
     response_model=List[EventOut],
     summary="List all fest events with optional category and search filters",
 )
+@app.get(
+    "/events",
+    response_model=List[EventOut],
+    summary="List all fest events with optional category and search filters",
+)
 def list_events(
     category: Optional[str] = Query(default=None, description="Filter by event category"),
     search: Optional[str] = Query(default=None, description="Case-insensitive title search"),
@@ -123,6 +128,11 @@ def list_events(
     response_model=EventDetail,
     summary="Get details for a specific event",
 )
+@app.get(
+    "/events/{event_id}",
+    response_model=EventDetail,
+    summary="Get details for a specific event",
+)
 def get_event(event_id: int):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -157,6 +167,12 @@ def get_event(event_id: int):
 
 @app.post(
     "/api/events/{event_id}/register",
+    response_model=RegistrationOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a student for an event with strict server-side validation",
+)
+@app.post(
+    "/events/{event_id}/register",
     response_model=RegistrationOut,
     status_code=status.HTTP_201_CREATED,
     summary="Register a student for an event with strict server-side validation",
@@ -241,6 +257,11 @@ def register_student(event_id: int, payload: RegistrationIn):
     response_model=List[RegistrationItemOut],
     summary="List registrations with event details, optionally filtered by event_id",
 )
+@app.get(
+    "/registrations",
+    response_model=List[RegistrationItemOut],
+    summary="List registrations with event details, optionally filtered by event_id",
+)
 def list_registrations(
     event_id: Optional[int] = Query(default=None, description="Filter registrations by event ID"),
 ):
@@ -284,6 +305,11 @@ def list_registrations(
 
 @app.get(
     "/api/stats",
+    response_model=StatsOut,
+    summary="Retrieve live festival statistics computed on-the-fly",
+)
+@app.get(
+    "/stats",
     response_model=StatsOut,
     summary="Retrieve live festival statistics computed on-the-fly",
 )
@@ -334,6 +360,12 @@ def get_stats():
 
 @app.post(
     "/api/events",
+    response_model=EventOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="[Stretch Goal] Create a new event with validation",
+)
+@app.post(
+    "/events",
     response_model=EventOut,
     status_code=status.HTTP_201_CREATED,
     summary="[Stretch Goal] Create a new event with validation",
@@ -401,6 +433,10 @@ def create_event(payload: EventCreateIn):
 
 @app.delete(
     "/api/registrations/{registration_id}",
+    summary="[Stretch Goal] Cancel a registration",
+)
+@app.delete(
+    "/registrations/{registration_id}",
     summary="[Stretch Goal] Cancel a registration",
 )
 def cancel_registration(registration_id: int):
